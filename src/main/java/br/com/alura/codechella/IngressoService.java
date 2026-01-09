@@ -1,8 +1,10 @@
 package br.com.alura.codechella;
 
+import br.com.alura.codechella.user.UserRepository;
 import io.micrometer.observation.annotation.Observed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -16,6 +18,9 @@ public class IngressoService {
 
     @Autowired
     private VendaRepository vendaRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Observed(name = "IngressoService.obterTodos")
     public Flux<IngressoDto> obterTodos() {
@@ -59,24 +64,30 @@ public class IngressoService {
     @Transactional
     @Observed(name = "IngressoService.comprar")
     public Mono<IngressoDto> comprar(CompraDto dto) {
-        return repositorio.findById(dto.ingressoId())
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Ingresso não encontrado.")))
-                .flatMap(ingresso -> {
-                    return repositorio.findFirstByEventoIdAndTotalGreaterThanOrderByLoteAsc(ingresso.getEventoId(), 0)
-                            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nenhum lote disponível para venda.")))
-                            .flatMap(activeLote -> {
-                                if (!activeLote.getId().equals(ingresso.getId())) {
-                                    return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lote não disponível. Compre o lote atual primeiro."));
-                                }
-                                Venda venda = new Venda();
-                                venda.setIngressoId(ingresso.getId());
-                                venda.setTotal(dto.total());
-                                return vendaRepository.save(venda).then(Mono.defer(() -> {
-                                    ingresso.setTotal(ingresso.getTotal() - dto.total());
-                                    return repositorio.save(ingresso);
-                                }));
-                            });
-                })
+        return ReactiveSecurityContextHolder.getContext()
+                .map(securityContext -> securityContext.getAuthentication().getName())
+                .flatMap(email -> userRepository.findByEmail(email))
+                .map(user -> user.getId())
+                .flatMap(userId -> repositorio.findById(dto.ingressoId())
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Ingresso não encontrado.")))
+                        .flatMap(ingresso -> {
+                            return repositorio.findFirstByEventoIdAndTotalGreaterThanOrderByLoteAsc(ingresso.getEventoId(), 0)
+                                    .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nenhum lote disponível para venda.")))
+                                    .flatMap(activeLote -> {
+                                        if (!activeLote.getId().equals(ingresso.getId())) {
+                                            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lote não disponível. Compre o lote atual primeiro."));
+                                        }
+                                        Venda venda = new Venda();
+                                        venda.setIngressoId(ingresso.getId());
+                                        venda.setTotal(dto.total());
+                                        venda.setUserId(userId);
+                                        return vendaRepository.save(venda).then(Mono.defer(() -> {
+                                            ingresso.setTotal(ingresso.getTotal() - dto.total());
+                                            return repositorio.save(ingresso);
+                                        }));
+                                    });
+                        })
+                )
                 .map(ingresso -> IngressoDto.toDto(ingresso));
     }
 

@@ -9,6 +9,7 @@ public class Venda {
     private Long id;
     private Long ingressoId;
     private int total;
+    private Long userId;
 
     public Long getId() {
         return id;
@@ -32,5 +33,13 @@ public class Venda {
 
     public void setTotal(int total) {
         this.total = total;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }

@@ -1,0 +1,1 @@
+alter table vendas add column user_id bigint not null;

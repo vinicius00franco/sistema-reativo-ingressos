@@ -26,6 +26,19 @@ Content-Type: application/json
 
 ###
 
+### Ingressos - Criar Lote
+POST http://localhost:8081/ingressos/lotes
+Content-Type: application/json
+
+{
+  "eventoId": 1,
+  "tipo": "CADEIRA",
+  "valor": 200.0,
+  "total": 50
+}
+
+###
+
 ### Ingressos - Comprar
 POST http://localhost:8081/ingressos/compra
 Content-Type: application/json
@@ -34,6 +47,11 @@ Content-Type: application/json
   "ingressoId": 1,
   "total": 2
 }
+
+###
+
+### Ingressos - Listar Lotes por Evento
+GET http://localhost:8081/ingressos/eventos/1/lotes
 
 ###
 
