@@ -1,0 +1,51 @@
+### Eventos - Listar todos
+GET http://localhost:8081/eventos
+
+###
+
+### Eventos - Obter por ID
+GET http://localhost:8081/eventos/1
+
+###
+
+### Eventos - Obter por tipo
+GET http://localhost:8081/eventos/categoria/SHOW
+
+###
+
+### Eventos - Traduzir
+GET http://localhost:8081/eventos/1/traduzir/pt
+
+###
+
+### Eventos - Criar
+POST http://localhost:8081/eventos
+Content-Type: application/json
+
+{
+  "tipo": "SHOW",
+  "nome": "Rock in Rio",
+  "data": "2026-09-15",
+  "descricao": "Festival de música"
+}
+
+###
+
+### Eventos - Atualizar
+PUT http://localhost:8081/eventos/1
+Content-Type: application/json
+
+{
+  "id": 1,
+  "tipo": "SHOW",
+  "nome": "Rock in Rio Atualizado",
+  "data": "2026-09-15",
+  "descricao": "Festival"
+}
+
+###
+
+### Eventos - Deletar
+DELETE http://localhost:8081/eventos/1
+
+###

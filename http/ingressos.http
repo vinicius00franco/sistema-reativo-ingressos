@@ -1,0 +1,57 @@
+### Ingressos - Listar todos
+GET http://localhost:8081/ingressos
+
+###
+
+### Ingressos - Obter por ID
+GET http://localhost:8081/ingressos/1
+
+###
+
+### Ingressos - Ver disponível
+GET http://localhost:8081/ingressos/1/disponivel
+
+###
+
+### Ingressos - Criar
+POST http://localhost:8081/ingressos
+Content-Type: application/json
+
+{
+  "eventoId": 1,
+  "tipo": "CADEIRA",
+  "valor": 150.0,
+  "total": 100
+}
+
+###
+
+### Ingressos - Comprar
+POST http://localhost:8081/ingressos/compra
+Content-Type: application/json
+
+{
+  "ingressoId": 1,
+  "total": 2
+}
+
+###
+
+### Ingressos - Atualizar
+PUT http://localhost:8081/ingressos/1
+Content-Type: application/json
+
+{
+  "id": 1,
+  "eventoId": 1,
+  "tipo": "CADEIRA",
+  "valor": 160.0,
+  "total": 98
+}
+
+###
+
+### Ingressos - Deletar
+DELETE http://localhost:8081/ingressos/1
+
+###
