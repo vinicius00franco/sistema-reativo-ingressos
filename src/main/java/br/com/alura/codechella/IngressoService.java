@@ -1,5 +1,6 @@
 package br.com.alura.codechella;
 
+import io.micrometer.observation.annotation.Observed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -16,27 +17,32 @@ public class IngressoService {
     @Autowired
     private VendaRepository vendaRepository;
 
+    @Observed(name = "IngressoService.obterTodos")
     public Flux<IngressoDto> obterTodos() {
         return  repositorio.findAll()
                 .map(IngressoDto::toDto);
     }
 
+    @Observed(name = "IngressoService.obterPorId")
     public Mono<IngressoDto> obterPorId(Long id) {
         return  repositorio.findById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                 .map(IngressoDto::toDto);
     }
 
+    @Observed(name = "IngressoService.cadastrar")
     public Mono<IngressoDto> cadastrar(IngressoDto dto) {
         return repositorio.save(dto.toEntity())
                 .map(IngressoDto::toDto);
     }
 
+    @Observed(name = "IngressoService.excluir")
     public Mono<Void> excluir(Long id) {
         return repositorio.findById(id)
                 .flatMap(repositorio::delete);
     }
 
+    @Observed(name = "IngressoService.alterar")
     public Mono<IngressoDto> alterar(Long id, IngressoDto dto) {
         return repositorio.findById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Id do evento não encontrado.")))
@@ -51,6 +57,7 @@ public class IngressoService {
     }
 
     @Transactional
+    @Observed(name = "IngressoService.comprar")
     public Mono<IngressoDto> comprar(CompraDto dto) {
         return repositorio.findById(dto.ingressoId())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Ingresso não encontrado.")))
@@ -73,6 +80,7 @@ public class IngressoService {
                 .map(ingresso -> IngressoDto.toDto(ingresso));
     }
 
+    @Observed(name = "IngressoService.criarLote")
     public Mono<IngressoDto> criarLote(NovoLoteDto dto) {
         return repositorio.findFirstByEventoIdOrderByLoteDesc(dto.eventoId())
                 .map(ultimoLote -> ultimoLote.getLote() + 1)
@@ -89,6 +97,7 @@ public class IngressoService {
                 .map(IngressoDto::toDto);
     }
 
+    @Observed(name = "IngressoService.obterLotesPorEvento")
     public Flux<IngressoDto> obterLotesPorEvento(Long eventoId) {
         return repositorio.findByEventoIdOrderByLoteAsc(eventoId)
                 .map(IngressoDto::toDto);

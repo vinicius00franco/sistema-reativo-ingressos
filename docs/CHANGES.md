@@ -4,6 +4,27 @@
 
 Este documento registra as principais mudanças implementadas no projeto, incluindo correções de bugs, novas funcionalidades e atualizações de regras de negócio.
 
+## Novas Funcionalidades
+
+- **Observabilidade Completa**: Implementado sistema de tracing e logging detalhado para todas as rotas HTTP
+  - Adicionadas dependências do Spring Boot Actuator, Micrometer Tracing e Zipkin
+  - Criado filtro de observabilidade para capturar requests, responses, headers e bodies
+  - Configurado logging estruturado com traceId e spanId
+  - Adicionado suporte a métricas Prometheus e tracing distribuído
+
+<!-- Removido: OpenTelemetry Java Agent (incompatível com versão atual do Java) -->
+<!-- Todas as referências ao agente foram retiradas do projeto. Mantemos Micrometer Tracing + Zipkin. -->
+
+- **Spans Detalhados de Banco de Dados**: Implementação de observabilidade granular
+  - Adicionados @Observed em todos os métodos do IngressoService
+  - Adicionados @Observed em todos os métodos do EventoService
+  - Configuração do ObservedAspect para instrumentação automática
+  - Habilitada observabilidade R2DBC para queries SQL
+  - Spans específicos para operações: obterTodos, obterPorId, comprar, cadastrar, etc.
+  - Visualização detalhada no Zipkin: tempo HTTP + tempo de cada método + tempo de queries SQL
+  - Habilitada propagação automática de contexto do Reactor (Micrometer context-propagation)
+  - Adicionado `ReactorContextConfig` para `Hooks.enableAutomaticContextPropagation()`
+
 ## Correções de Bugs
 
 - **Erro 500 no endpoint /eventos**: Corrigido incompatibilidade de versão do H2 com Flyway. Downgrade do H2 para 2.1.214 e mudança para armazenamento baseado em arquivo.
@@ -32,6 +53,8 @@ Este documento registra as principais mudanças implementadas no projeto, inclui
 - **IngressoService.java**: Implementada lógica de lote em `comprar()`, `criarLote()` e `obterLotesPorEvento()`.
 - **IngressoController.java**: Modificado `totalDisponivel()` para SSE de todos os lotes do evento.
 - **NovoLoteDto.java**: Novo record para criação de lotes.
+ - **ObservabilityFilter.java**: Comentário atualizado para refletir Micrometer/Brave em vez de OpenTelemetry.
+ - **run-with-otel.sh**: Script removido/descontinuado devido à incompatibilidade do OpenTelemetry Agent.
 
 ## Migrações de Banco
 
@@ -49,11 +72,3 @@ Este documento registra as principais mudanças implementadas no projeto, inclui
 - SSE emitindo atualizações em tempo real para múltiplos lotes.
 - Validação de compras em lotes não ativos retornando erro 400.
 - Criação de lotes via POST funcionando com auto-incremento.
-
-## Controle de Versão
-
-- Repositório Git re-inicializado com branch `master`.
-- Remoto configurado para `github.com/vinicius00franco/sistema-reativo-ingressos`.
-- README.md criado com título "sistema-reativo-ingressos".
-- Autenticação via GitHub CLI configurada para login pelo navegador.
-- Criação da branch `develop` planejada após push bem-sucedido.

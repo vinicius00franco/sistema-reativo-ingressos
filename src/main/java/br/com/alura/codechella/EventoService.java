@@ -1,5 +1,6 @@
 package br.com.alura.codechella;
 
+import io.micrometer.observation.annotation.Observed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -13,27 +14,32 @@ public class EventoService {
     @Autowired
     private EventoRepository repositorio;
 
+    @Observed(name = "EventoService.obterTodos")
     public Flux<EventoDto> obterTodos() {
         return  repositorio.findAll()
                 .map(EventoDto::toDto);
     }
 
+    @Observed(name = "EventoService.obterPorId")
     public Mono<EventoDto> obterPorId(Long id) {
         return  repositorio.findById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                 .map(EventoDto::toDto);
     }
 
+    @Observed(name = "EventoService.cadastrar")
     public Mono<EventoDto> cadastrar(EventoDto dto) {
         return repositorio.save(dto.toEntity())
                 .map(EventoDto::toDto);
     }
 
+    @Observed(name = "EventoService.excluir")
     public Mono<Void> excluir(Long id) {
         return repositorio.findById(id)
                 .flatMap(repositorio::delete);
     }
 
+    @Observed(name = "EventoService.alterar")
     public Mono<EventoDto> alterar(Long id, EventoDto dto) {
         return repositorio.findById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Id do evento não encontrado.")))
@@ -47,12 +53,14 @@ public class EventoService {
                 .map(EventoDto::toDto);
     }
 
+    @Observed(name = "EventoService.obterPorTipo")
     public Flux<EventoDto> obterPorTipo(String tipo) {
         TipoEvento tipoEvento = TipoEvento.valueOf(tipo.toUpperCase());
         return repositorio.findByTipo(tipoEvento)
                 .map(EventoDto::toDto);
     }
 
+    @Observed(name = "EventoService.obterTraducao")
     public Mono<String> obterTraducao(Long id, String idioma) {
         return repositorio.findById(id)
                 .flatMap(e -> TraducaoDeTextos.obterTraducao(e.getDescricao(), idioma));
